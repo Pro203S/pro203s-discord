@@ -9,6 +9,9 @@
     "allowJs": true,
     "rootDir": "./src",
     "outDir": "./dist",
+    "types": [
+      "./declarations.d.ts"
+    ],
 
     // Bundler mode
     "moduleResolution": "bundler",
@@ -25,5 +28,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
-  }
+  },
+  "exclude": ["./test/**/*"]
 }

@@ -1,0 +1,24 @@
+{
+  "name": "@pro203s/discord",
+  "description": "Make Discord bot easily.",
+  "version": "0.0.0",
+  "module": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "repository": {
+    "type": "github",
+    "url": "git+https://github.com/Pro203S/discord"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.3"
+  }
+}

@@ -46,7 +46,7 @@ discord-env.ts
 `.gitignore`에 아래 내용을 추가해주세요.  
 
 ```ini
-discord-*.ts
+discord-env.ts
 ```
 
 ### 2-5. 파일 생성하기

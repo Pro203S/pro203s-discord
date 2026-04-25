@@ -2,11 +2,22 @@
   "name": "@pro203s/discord",
   "description": "Make Discord bot easily.",
   "version": "0.0.0",
-  "module": "dist/index.js",
-  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/types.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "type": "commonjs",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch"
+  },
+  "bin": {
+    "discord": "./dist/bin/index.js"
   },
   "repository": {
     "type": "github",
@@ -19,6 +30,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "chalk": "^5.6.2",
     "discord.js": "^14.26.3"
   }
 }

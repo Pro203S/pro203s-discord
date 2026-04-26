@@ -28,7 +28,8 @@ const helpMessage = () => {
             case "clear-commands":
                 await ClearCommands({
                     "token": project.env.token,
-                    "appId": project.env.appId
+                    "appId": project.env.appId,
+                    "restOptions": project.config.rest
                 });
                 break;
             default:

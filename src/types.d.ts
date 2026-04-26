@@ -1,8 +1,8 @@
 import * as discord from 'discord.js';
 
 export type Config = {
-    "client": discord.ClientOptions,
-    "rest": Partial<discord.RESTOptions>
+    "client"?: discord.ClientOptions,
+    "rest"?: Partial<discord.RESTOptions>
 };
 
 export type Environments = {

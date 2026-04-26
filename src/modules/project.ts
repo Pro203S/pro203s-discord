@@ -1,31 +1,8 @@
 import * as fs from 'fs';
 import { Config, Environments } from '../types';
 import path from 'path';
-import { pathToFileURL } from 'url';
-import { getDefaultExport, loadTypeScriptModule } from './typescript';
-
-const ENV_FILE_NAMES = [
-    "discord-env.ts",
-    "discord-env.js",
-    "discord-env.cjs",
-    "discord-env.mjs"
-] as const;
-
-const isEnvironments = (value: unknown): value is Environments => {
-    return typeof value === "object" &&
-        value !== null &&
-        "token" in value &&
-        typeof value.token === "string" &&
-        "appId" in value &&
-        typeof value.appId === "string";
-};
-
-const hasErrorCode = (error: unknown, code: string): boolean => {
-    return typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        (error as { "code"?: unknown }).code === code;
-};
+import { getDefaultExport, loadModule } from './typescript';
+import c from 'chalk';
 
 export default class Project {
     public env!: Environments;
@@ -35,34 +12,24 @@ export default class Project {
         private _dir: string
     ) { }
 
-    private resolveEnvironmentFilePath() {
-        for (const fileName of ENV_FILE_NAMES) {
+    private resolveFilePath(moduleName: string, throwWhenNotFound?: boolean) {
+        const possibleFileNames = [
+            `${moduleName}.ts`,
+            `${moduleName}.js`,
+            `${moduleName}.cjs`,
+            `${moduleName}.mjs`
+        ];
+        for (const fileName of possibleFileNames) {
             const filePath = path.join(this._dir, fileName);
 
             if (fs.existsSync(filePath))
                 return filePath;
         }
 
-        throw new Error("Cannot find discord-env.ts/js/cjs/mjs in the project root.");
-    }
+        if (throwWhenNotFound)
+            throw new Error(`Cannot find ${possibleFileNames.join("/")} in the project root.`);
 
-    private async loadEnvironmentModule(filePath: string) {
-        const extension = path.extname(filePath);
-
-        if (extension === ".ts")
-            return loadTypeScriptModule(filePath);
-
-        if (extension === ".mjs")
-            return import(pathToFileURL(filePath).href);
-
-        try {
-            return require(filePath);
-        } catch (error) {
-            if (hasErrorCode(error, "ERR_REQUIRE_ESM"))
-                return import(pathToFileURL(filePath).href);
-
-            throw error;
-        }
+        return;
     }
 
     async load() {
@@ -73,13 +40,38 @@ export default class Project {
 
         // load env file
 
-        const envPath = this.resolveEnvironmentFilePath();
-        const envModule = await this.loadEnvironmentModule(envPath);
-        const env = getDefaultExport(envModule);
+        const envPath = this.resolveFilePath("discord-env", true) as string;
+        const envModule = await loadModule(envPath);
+        const env: any = getDefaultExport(envModule);
 
-        if (!isEnvironments(env))
-            throw new Error("discord-env file must export a default object with string token and appId values.");
+        if (!(env && typeof env === "object" &&
+            env?.token && typeof env?.token === "string" &&
+            env?.appId && typeof env?.appId === "string")
+        )
+            throw new Error("discord-env file is malformed.");
 
-        this.env = env;
+        this.env = env as Environments;
+
+        // load config file
+
+        await (async () => {
+            const configPath = this.resolveFilePath("discord-config");
+            if (!configPath) {
+                //console.warn(c.yellow("Cannot find discord-config file in project root.\nSkipping..."));
+                return;
+            }
+            const configModule = await loadModule(configPath);
+            const config: any = getDefaultExport(configModule);
+
+            if (!(config && typeof config === "object" &&
+                (config?.rest || typeof config.rest === "object") ||
+                (config?.client || typeof config.client === "object"))
+            )
+                throw new Error("discord-config file is malformed.");
+
+            this.config = config;
+        })();
+
+
     }
 }

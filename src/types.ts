@@ -19,34 +19,22 @@ export type ApplicationCommand = {
     "arguments"?: ApplicationCommandArguments[]
 };
 
+export type ApplicationCommandArgumentsBase<T = string, ADD = {}> = {
+    "type": T,
+    "name": string,
+    "description": string,
+    "required"?: boolean
+} & Partial<ADD>;
+
 export type ApplicationCommandArguments =
-    ApplicationCommandArguments_String;
-
-export type ApplicationCommandArguments_String = {
-    "type": "string",
-    "name": string,
-    "description": string,
-    "required"?: boolean,
-    "maxLength"?: number,
-    "minLength"?: number
-};
-
-export type ApplicationCommandArguments_Integer = {
-    "type": "integer",
-    "name": string,
-    "description": string,
-    "required"?: boolean,
-    "maxValue"?: number,
-    "minValue"?: number
-};
-
-export type ApplicationCommandArguments_User = {
-    "type": "user",
-    "name": string,
-    "description": string,
-    "required"?: boolean,
-};
-
-
+    ApplicationCommandArgumentsBase<"string", { "maxLength": number, "minLength": number }> |
+    ApplicationCommandArgumentsBase<"integer", { "maxValue": number, "minValue": number }> |
+    ApplicationCommandArgumentsBase<"boolean"> |
+    ApplicationCommandArgumentsBase<"user"> |
+    ApplicationCommandArgumentsBase<"channel"> |
+    ApplicationCommandArgumentsBase<"role"> |
+    ApplicationCommandArgumentsBase<"mentionable"> |
+    ApplicationCommandArgumentsBase<"number", { "maxValue": number, "minValue": number }> |
+    ApplicationCommandArgumentsBase<"attachment">;
 
 //#endregion

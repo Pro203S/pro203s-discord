@@ -3,6 +3,7 @@ import c from "chalk";
 import * as fs from 'fs';
 import Project from "../modules/project";
 import ClearCommands from "./commands/clear-commands";
+import ora from "ora";
 
 const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
 
@@ -18,6 +19,7 @@ const helpMessage = () => {
     try {
         const command = process.argv[2];
         const project = new Project(process.cwd());
+        await project.load();
 
         switch (command) {
             case "start":
@@ -25,14 +27,17 @@ const helpMessage = () => {
                 break;
             case "clear-commands":
                 await ClearCommands({
-                    "token": "asdf",
-                    "appId": "123124812958192581"
+                    "token": project.env.token,
+                    "appId": project.env.appId
                 });
                 break;
             default:
                 helpMessage();
                 break;
         }
+    } catch (err) {
+        const e = err as Error;
+        console.error(c.red("ERROR: " + e.message));
     } finally {
         console.log();
         console.log(c.grey("@pro203s/discord v" + packageJson.version));

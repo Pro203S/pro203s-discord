@@ -8,16 +8,20 @@ export default async function ClearCommands(options: {
     "restOptions"?: Partial<RESTOptions>
 }) {
     const { token, appId, restOptions } = options;
+    const spinner = ora(chalk.gray("Processing with application id " + appId.split("").map((v, i) => i >= 10 ? "*" : v).join("") + "...")).start();
+    try {
+        const rest = new REST(restOptions)
+            .setToken(token);
 
-    const spinner = ora(chalk.gray("Processing with application id " + appId.slice(0, 10) + "..."));
-    spinner.start();
+        await rest.put(Routes.applicationCommands(appId), {
+            "body": []
+        });
 
-    const rest = new REST(restOptions)
-        .setToken(token);
-
-    await rest.put(Routes.applicationCommands(appId), {
-        "body": []
-    });
-
-    spinner.succeed("Cleared!");
+        spinner.succeed("Cleared!");
+    } catch (err) {
+        throw err;
+    } finally {
+        spinner.stop();
+        spinner.clear();
+    }
 }

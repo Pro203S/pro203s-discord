@@ -19,7 +19,10 @@ const helpMessage = () => {
     try {
         const command = process.argv[2];
         const project = new Project(process.cwd());
+        const projectSpinner = ora("Loading project...").start();
         await project.load();
+        projectSpinner.stop();
+        projectSpinner.clear();
 
         switch (command) {
             case "start":

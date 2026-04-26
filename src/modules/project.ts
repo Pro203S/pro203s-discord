@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Environments } from '../types';
+import { Config, Environments } from '../types';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { getDefaultExport, loadTypeScriptModule } from './typescript';
@@ -29,6 +29,7 @@ const hasErrorCode = (error: unknown, code: string): boolean => {
 
 export default class Project {
     public env!: Environments;
+    public config!: Config;
 
     constructor(
         private _dir: string

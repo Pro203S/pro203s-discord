@@ -16,13 +16,11 @@ const helpMessage = () => {
 };
 
 (async () => {
+    const projectSpinner = ora("Loading project...").start();
     try {
         const command = process.argv[2];
         const project = new Project(process.cwd());
-        const projectSpinner = ora("Loading project...").start();
         await project.load();
-        projectSpinner.stop();
-        projectSpinner.clear();
 
         switch (command) {
             case "start":
@@ -42,7 +40,11 @@ const helpMessage = () => {
     } catch (err) {
         const e = err as Error;
         console.error(c.red("ERROR: " + e.message));
+        console.error(c.gray(e.stack));
     } finally {
+        projectSpinner.stop();
+        projectSpinner.clear();
+
         console.log();
         console.log(c.grey("@pro203s/discord v" + packageJson.version));
     }

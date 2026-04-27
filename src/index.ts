@@ -1,2 +1,2 @@
-export * from './modules/server';
+export * from './modules/botclient';
 export * from './types';

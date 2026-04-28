@@ -331,17 +331,17 @@ export default class Project {
     public env!: Environments;
     public config!: Config;
 
-    private _commands: CommandTree = {};
-    private _customs: CustomModule[] = [];
-    private _events: EventModule[] = [];
-    private _interactions: InteractionModule[] = [];
+    public commands: CommandTree = {};
+    public customs: CustomModule[] = [];
+    public events: EventModule[] = [];
+    public interactions: InteractionModule[] = [];
 
     constructor(
         private _dir: string
     ) { }
 
     getApplicationCommands(): RESTPostAPIApplicationCommandsJSONBody[] {
-        return Object.entries(this._commands)
+        return Object.entries(this.commands)
             .map(([commandName, value]) => {
                 if (isCommandModule(value))
                     return buildStandaloneCommand(commandName, value);
@@ -392,26 +392,92 @@ export default class Project {
 
         //#region load commands
 
-        const commandPath = path.join(this._dir, "src", "commands");
-        this._commands = {};
+        await (async () => {
+            const commandPath = path.join(this._dir, "src", "commands");
+            this.commands = {};
 
-        if (!fs.existsSync(commandPath))
-            return;
+            if (!fs.existsSync(commandPath))
+                return;
 
-        const commandFiles = getLoadableFiles(commandPath);
+            const commandFiles = getLoadableFiles(commandPath);
 
-        for await (const commandFile of commandFiles) {
-            const commandKey = getModuleKey(commandPath, commandFile);
-            const module = getDefaultExport(await loadModule(commandFile)) as CommandModule;
+            for await (const commandFile of commandFiles) {
+                const commandKey = getModuleKey(commandPath, commandFile);
+                const module = getDefaultExport(await loadModule(commandFile)) as CommandModule;
 
-            if (!module.command || typeof module.command !== "object")
-                throw new Error("Invalid command object from: " + commandFile);
+                if (!(
+                    module.callback && typeof module.callback === "function" &&
+                    module.command && typeof module.command === "object"
+                )) throw new Error("Invalid customs module from: " + commandFile);
 
-            if (!module.callback || typeof module.callback !== "function")
-                throw new Error("Invalid callback function from: " + commandFile);
+                insertCommandModule(this.commands, commandKey, module);
+            }
+        })();
 
-            insertCommandModule(this._commands, commandKey, module);
-        }
+        //#endregion
+
+        //#region load customs
+
+        await (async () => {
+            const srcPath = path.join(this._dir, "src", "customs");
+            if (!fs.existsSync(srcPath)) return;
+            const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
+
+            for await (const file of files) {
+                const module: CustomModule = await loadModule(file);
+
+                if (!(
+                    module.callback && typeof module.callback === "function" &&
+                    module.condition && typeof module.condition === "string"
+                )) throw new Error("Invalid custom module from: " + file);
+
+                this.customs.push(module);
+            }
+        })();
+
+        //#endregion
+
+        //#region load events
+
+        await (async () => {
+            const srcPath = path.join(this._dir, "src", "events");
+            if (!fs.existsSync(srcPath)) return;
+            const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
+
+            for await (const file of files) {
+                const module: EventModule = await loadModule(file);
+
+                if (!(
+                    module.callback && typeof module.callback === "function" &&
+                    module.eventName && typeof module.eventName === "string"
+                )) throw new Error("Invalid event module from: " + file);
+
+                this.events.push(module)
+            }
+        })();
+
+        //#endregion
+
+        //#region load interactions
+
+        await (async () => {
+            const srcPath = path.join(this._dir, "src", "interactions");
+            if (!fs.existsSync(srcPath)) return;
+            const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
+
+            for await (const file of files) {
+                const module: InteractionModule = await loadModule(file);
+
+                if (!(
+                    module.callback && typeof module.callback === "function" &&
+                    module.condition && typeof module.condition === "object" &&
+                    module.condition.type && typeof module.condition.type === "string" &&
+                    module.condition.customId && typeof module.condition.customId === "string"
+                )) throw new Error("Invalid event module from: " + file);
+
+                this.interactions.push(module)
+            }
+        })();
 
         //#endregion
 

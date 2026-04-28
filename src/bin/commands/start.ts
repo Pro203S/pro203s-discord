@@ -2,10 +2,12 @@ import c from "chalk";
 import ora from "ora";
 import BotClient from "../../modules/botclient";
 import Project from "../../modules/project";
+import { packageJson } from "..";
 
 const logCheck = (...msg: any[]) => console.log(c.greenBright(c.bold("✓")), ...msg);
 
 export default async function Start() {
+    console.log(c.cyanBright("@pro203s/discord v" + packageJson.version));
     const spinner = ora("Starting...").start();
     const start = new Date().getTime();
     const project = new Project(process.cwd());

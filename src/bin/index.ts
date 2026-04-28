@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import ClearCommands from "./commands/clear-commands";
 import Start from "./commands/start";
 
-const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
+export const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
 
 const printVersion = () => {
     console.log();

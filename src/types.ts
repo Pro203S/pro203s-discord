@@ -1,8 +1,9 @@
 import * as discord from 'discord.js';
 
 export type Config = {
-    "client"?: discord.ClientOptions,
-    "rest"?: Partial<discord.RESTOptions>
+    "client": discord.ClientOptions,
+    "rest"?: Partial<discord.RESTOptions>,
+    "presence"?: discord.PresenceData
 };
 
 export type Environments = {
@@ -19,11 +20,17 @@ export type Command = {
     "arguments"?: ApplicationCommandArguments[]
 };
 
+export type ApplicationCommandChoice = {
+    "name": string,
+    "value": string | number
+};
+
 export type ApplicationCommandArgumentsBase<T = string, ADD = {}> = {
     "type": T,
     "name": string,
     "description": string,
-    "required"?: boolean
+    "required"?: boolean,
+    "choices"?: ApplicationCommandChoice[]
 } & Partial<ADD>;
 
 export type ApplicationCommandArguments =

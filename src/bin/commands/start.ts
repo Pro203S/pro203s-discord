@@ -7,15 +7,21 @@ import { packageJson } from "..";
 const logCheck = (...msg: any[]) => console.log(c.greenBright(c.bold("✓")), ...msg);
 
 export default async function Start() {
-    console.log(c.cyanBright("@pro203s/discord v" + packageJson.version));
     const spinner = ora("Starting...").start();
-    const start = new Date().getTime();
-    const project = new Project(process.cwd());
-    const client = new BotClient(project);
-    await client.load();
-    await client.start();
-    spinner.stop().clear();
+    try {
+        console.log(c.cyanBright("@pro203s/discord v" + packageJson.version));
+        const start = new Date().getTime();
+        const project = new Project(process.cwd());
+        const client = new BotClient(project);
+        await client.load();
+        await client.start();
+        spinner.stop().clear();
 
-    logCheck("Ready in " + (new Date().getTime() - start) + "ms");
-    console.log("  Logged In as " + client.user.username + "#" + client.user.discriminator);
+        logCheck("Ready in " + (new Date().getTime() - start) + "ms");
+        console.log("  Logged In as " + client.user.username + "#" + client.user.discriminator);
+
+        await client.watch();
+    } finally {
+        spinner.stop().clear();
+    }
 }

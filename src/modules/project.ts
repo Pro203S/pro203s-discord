@@ -257,24 +257,24 @@ const buildStandaloneCommand = (commandName: string, module: CommandModule): RES
         case DiscordApplicationCommandType.ChatInput:
             return {
                 "type": DiscordApplicationCommandType.ChatInput,
-                "name": module.command.name || commandName,
+                "name": commandName,
                 "description": module.command.description,
                 "options": createCommandOptions(module.command.arguments)
             };
         case DiscordApplicationCommandType.User:
             return {
                 "type": DiscordApplicationCommandType.User,
-                "name": module.command.name || commandName
+                "name": commandName
             };
         case DiscordApplicationCommandType.Message:
             return {
                 "type": DiscordApplicationCommandType.Message,
-                "name": module.command.name || commandName
+                "name": commandName
             };
         case DiscordApplicationCommandType.PrimaryEntryPoint:
             return {
                 "type": DiscordApplicationCommandType.PrimaryEntryPoint,
-                "name": module.command.name || commandName
+                "name": commandName
             };
     }
 };
@@ -337,7 +337,7 @@ export default class Project {
     public interactions: InteractionModule[] = [];
 
     constructor(
-        private _dir: string
+        public dir: string
     ) { }
 
     getApplicationCommands(): RESTPostAPIApplicationCommandsJSONBody[] {
@@ -351,13 +351,13 @@ export default class Project {
     }
 
     async load() {
-        const root = fs.readdirSync(this._dir, "utf-8");
+        const root = fs.readdirSync(this.dir, "utf-8");
 
         if (!root.includes("src"))
             throw new Error("There are no source files.");
 
         //#region load env file
-        const envPath = resolveFilePath(this._dir, "discord-env", true) as string;
+        const envPath = resolveFilePath(this.dir, "discord-env", true) as string;
         const envModule = await loadModule(envPath);
         const env: any = getDefaultExport(envModule);
 
@@ -372,7 +372,7 @@ export default class Project {
 
         //#region load config file
         await (async () => {
-            const configPath = resolveFilePath(this._dir, "discord-config");
+            const configPath = resolveFilePath(this.dir, "discord-config");
             if (!configPath) {
                 //console.warn(c.yellow("Cannot find discord-config file in project root.\nSkipping..."));
                 return;
@@ -390,97 +390,95 @@ export default class Project {
         })();
         //#endregion
 
-        //#region load commands
-
-        await (async () => {
-            const commandPath = path.join(this._dir, "src", "commands");
-            this.commands = {};
-
-            if (!fs.existsSync(commandPath))
-                return;
-
-            const commandFiles = getLoadableFiles(commandPath);
-
-            for await (const commandFile of commandFiles) {
-                const commandKey = getModuleKey(commandPath, commandFile);
-                const module = getDefaultExport(await loadModule(commandFile)) as CommandModule;
-
-                if (!(
-                    module.callback && typeof module.callback === "function" &&
-                    module.command && typeof module.command === "object"
-                )) throw new Error("Invalid customs module from: " + commandFile);
-
-                insertCommandModule(this.commands, commandKey, module);
-            }
-        })();
-
-        //#endregion
-
-        //#region load customs
-
-        await (async () => {
-            const srcPath = path.join(this._dir, "src", "customs");
-            if (!fs.existsSync(srcPath)) return;
-            const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
-
-            for await (const file of files) {
-                const module: CustomModule = await loadModule(file);
-
-                if (!(
-                    module.callback && typeof module.callback === "function" &&
-                    module.condition && typeof module.condition === "string"
-                )) throw new Error("Invalid custom module from: " + file);
-
-                this.customs.push(module);
-            }
-        })();
-
-        //#endregion
-
-        //#region load events
-
-        await (async () => {
-            const srcPath = path.join(this._dir, "src", "events");
-            if (!fs.existsSync(srcPath)) return;
-            const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
-
-            for await (const file of files) {
-                const module: EventModule = await loadModule(file);
-
-                if (!(
-                    module.callback && typeof module.callback === "function" &&
-                    module.eventName && typeof module.eventName === "string"
-                )) throw new Error("Invalid event module from: " + file);
-
-                this.events.push(module)
-            }
-        })();
-
-        //#endregion
-
-        //#region load interactions
-
-        await (async () => {
-            const srcPath = path.join(this._dir, "src", "interactions");
-            if (!fs.existsSync(srcPath)) return;
-            const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
-
-            for await (const file of files) {
-                const module: InteractionModule = await loadModule(file);
-
-                if (!(
-                    module.callback && typeof module.callback === "function" &&
-                    module.condition && typeof module.condition === "object" &&
-                    module.condition.type && typeof module.condition.type === "string" &&
-                    module.condition.customId && typeof module.condition.customId === "string"
-                )) throw new Error("Invalid event module from: " + file);
-
-                this.interactions.push(module)
-            }
-        })();
-
-        //#endregion
+        await this.reload("commands");
+        await this.reload("customs");
+        await this.reload("events");
+        await this.reload("interactions");
 
         return;
+    }
+
+    async reload(type: "commands" | "customs" | "events" | "interactions") {
+        switch (type) {
+            case 'commands':
+                await (async () => {
+                    const commandPath = path.join(this.dir, "src", "commands");
+                    this.commands = {};
+
+                    if (!fs.existsSync(commandPath))
+                        return;
+
+                    const commandFiles = getLoadableFiles(commandPath);
+
+                    for await (const commandFile of commandFiles) {
+                        const commandKey = getModuleKey(commandPath, commandFile);
+                        const module = getDefaultExport(await loadModule(commandFile)) as CommandModule;
+
+                        if (!(
+                            module.callback && typeof module.callback === "function" &&
+                            module.command && typeof module.command === "object"
+                        )) throw new Error("Invalid customs module from: " + commandFile);
+
+                        insertCommandModule(this.commands, commandKey, module);
+                    }
+                })();
+                return;
+            case 'customs':
+                await (async () => {
+                    const srcPath = path.join(this.dir, "src", "customs");
+                    if (!fs.existsSync(srcPath)) return;
+                    const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
+
+                    for await (const file of files) {
+                        const module: CustomModule = await loadModule(file);
+
+                        if (!(
+                            module.callback && typeof module.callback === "function" &&
+                            module.condition && typeof module.condition === "string"
+                        )) throw new Error("Invalid custom module from: " + file);
+
+                        this.customs.push(module);
+                    }
+                })();
+                return;
+            case 'events':
+                await (async () => {
+                    const srcPath = path.join(this.dir, "src", "events");
+                    if (!fs.existsSync(srcPath)) return;
+                    const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
+
+                    for await (const file of files) {
+                        const module: EventModule = await loadModule(file);
+
+                        if (!(
+                            module.callback && typeof module.callback === "function" &&
+                            module.eventName && typeof module.eventName === "string"
+                        )) throw new Error("Invalid event module from: " + file);
+
+                        this.events.push(module)
+                    }
+                })();
+                return;
+            case 'interactions':
+                await (async () => {
+                    const srcPath = path.join(this.dir, "src", "interactions");
+                    if (!fs.existsSync(srcPath)) return;
+                    const files = fs.readdirSync(srcPath, "utf-8").map(v => path.join(srcPath, v));
+
+                    for await (const file of files) {
+                        const module: InteractionModule = await loadModule(file);
+
+                        if (!(
+                            module.callback && typeof module.callback === "function" &&
+                            module.condition && typeof module.condition === "object" &&
+                            module.condition.type && typeof module.condition.type === "string" &&
+                            module.condition.customId && typeof module.condition.customId === "string"
+                        )) throw new Error("Invalid interaction module from: " + file);
+
+                        this.interactions.push(module)
+                    }
+                })();
+                return;
+        }
     }
 }

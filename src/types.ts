@@ -15,7 +15,6 @@ export type Environments = {
 export type ApplicationCommandType = "chatInput" | "user" | "message" | "primary_entry_point";
 export type Command = {
     "type"?: ApplicationCommandType,
-    "name": string,
     "description": string,
     "arguments"?: ApplicationCommandArguments[]
 };
@@ -48,7 +47,7 @@ export type ApplicationCommandArguments =
 //#region src/commands
 
 export type CommandCallbackArgs<T extends ApplicationCommandType> = {
-    "interaction":T extends "chatInput" ?
+    "interaction": T extends "chatInput" ?
     discord.ChatInputCommandInteraction<"raw"> :
     T extends "user" ?
     discord.UserContextMenuCommandInteraction<"raw"> :
@@ -73,7 +72,7 @@ export type CommandModule<T extends ApplicationCommandType = ApplicationCommandT
 export type CustomEventsMap = {
     "onStartup": [],
     "onStartupFinished": [],
-    "onExit": [],
+    "onExit": [number],
     "onDjsDebug": [string],
     "onDjsWarn": [string],
     "onDjsError": [Error]
@@ -113,17 +112,20 @@ export type InteractionTypes = {
     "modalSubmit": discord.ModalSubmitInteraction;
 }
 
-export type InteractionCallback<T extends keyof InteractionTypes = keyof InteractionTypes> = {
+export type InteractionCallbackArgs<T extends keyof InteractionTypes> = {
     "interaction": InteractionTypes[T],
     "client": discord.Client<true>,
     "rest": discord.REST
 };
+export type InteractionCallback<T extends keyof InteractionTypes> = (args: InteractionCallbackArgs<T>) => any;
+
+export type InteractionCondition<T extends keyof InteractionTypes> = {
+    "type": T;
+    "customId": string
+};
 
 export type InteractionModule<T extends keyof InteractionTypes = keyof InteractionTypes> = {
-    "condition": {
-        "type": T;
-        "customId": string
-    },
+    "condition": InteractionCondition<T>,
     "callback": InteractionCallback<T>
 };
 

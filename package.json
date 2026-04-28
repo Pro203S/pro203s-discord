@@ -24,7 +24,8 @@
     "url": "git+https://github.com/Pro203S/discord"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/lodash": "^4.17.24"
   },
   "peerDependencies": {
     "typescript": "^5",
@@ -32,6 +33,9 @@
   },
   "dependencies": {
     "chalk": "^5.6.2",
-    "ora": "^9.4.0"
+    "chokidar": "^5.0.0",
+    "lodash": "^4.18.1",
+    "ora": "^9.4.0",
+    "wildcard-match": "^5.1.4"
   }
 }

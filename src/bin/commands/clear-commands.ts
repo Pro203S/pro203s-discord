@@ -1,8 +1,9 @@
 import chalk from "chalk";
 import { REST, RESTOptions, Routes } from "discord.js"
 import ora from 'ora';
+import Project from "../../modules/project";
 
-export default async function ClearCommands(options: {
+async function Request(options: {
     "token": string,
     "appId": string,
     "restOptions"?: Partial<RESTOptions>
@@ -24,4 +25,14 @@ export default async function ClearCommands(options: {
         spinner.stop();
         spinner.clear();
     }
+}
+
+export default async function ClearCommands() {
+    const project = new Project(process.cwd());
+
+    await Request({
+        "token": project.env.token,
+        "appId": project.env.appId,
+        "restOptions": project.config.rest
+    });
 }

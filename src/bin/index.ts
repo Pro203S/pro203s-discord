@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 import c from "chalk";
 import * as fs from 'fs';
-import Project from "../modules/project";
 import ClearCommands from "./commands/clear-commands";
-import ora from "ora";
+import Start from "./commands/start";
 
 const packageJson = JSON.parse(fs.readFileSync("./package.json", "utf-8"));
+
+const printVersion = () => {
+    console.log();
+    console.log(c.grey("@pro203s/discord v" + packageJson.version));
+};
 
 const helpMessage = () => {
     console.error(c.red("ERROR: No arguments provided."));
@@ -13,25 +17,20 @@ const helpMessage = () => {
     console.log("Commands:");
     console.log("- start:          Starts the bot.");
     console.log("- clear-commands: Clears " + c.bold("all types of application commands."));
+
+    printVersion();
 };
 
 (async () => {
-    const projectSpinner = ora("Loading project...").start();
     try {
         const command = process.argv[2];
-        const project = new Project(process.cwd());
-        await project.load();
 
         switch (command) {
             case "start":
-
+                await Start();
                 break;
             case "clear-commands":
-                await ClearCommands({
-                    "token": project.env.token,
-                    "appId": project.env.appId,
-                    "restOptions": project.config.rest
-                });
+                await ClearCommands();
                 break;
             default:
                 helpMessage();
@@ -41,11 +40,7 @@ const helpMessage = () => {
         const e = err as Error;
         console.error(c.red("ERROR: " + e.message));
         console.error(c.gray(e.stack));
-    } finally {
-        projectSpinner.stop();
-        projectSpinner.clear();
 
-        console.log();
-        console.log(c.grey("@pro203s/discord v" + packageJson.version));
+        printVersion();
     }
 })();

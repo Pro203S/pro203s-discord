@@ -78,7 +78,6 @@ export default class BotClient {
             watcher.on("all", async () => {
                 await this._project.reload("commands");
                 const now = this._project.getApplicationCommands();
-                console.log(lodash.isEqual(infos, now));
 
                 if (lodash.isEqual(infos, now))
                     return;

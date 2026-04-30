@@ -82,7 +82,7 @@ export default class BotClient {
                 if (lodash.isEqual(infos, now))
                     return;
 
-                console.log("  Command updated. Reloading...");
+                console.log("  Reloading application commands...");
                 infos = now;
                 this._rest.put(Routes.applicationCommands(this._project.env.appId), {
                     "body": this._project.getApplicationCommands()

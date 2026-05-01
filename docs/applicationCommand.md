@@ -29,7 +29,7 @@ src/
 
 명령어의 이름은 파일 이름으로 정해집니다.  
 
-## 2. 내용 작성하기
+## 2. 코드 작성하기
 
 > [!IMPORTANT]  
 > 모든 타입 import는 `@pro203s/discord`에서 import합니다.

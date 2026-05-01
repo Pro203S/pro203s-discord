@@ -1,4 +1,4 @@
-import { CommandModule, ApplicationCommandArguments } from "../types";
+import { CommandModule, ApplicationCommandArguments, ApplicationCommandChatInput, ApplicationCommandPrimaryEntryPoint } from "../types";
 import {
     ApplicationCommandOptionType as DiscordApplicationCommandOptionType,
     ApplicationCommandType as DiscordApplicationCommandType,
@@ -248,7 +248,7 @@ export const buildStandaloneCommand = (commandName: string, module: CommandModul
                 "type": DiscordApplicationCommandType.ChatInput,
                 "name": commandName,
                 "description": module.command.description,
-                "options": createCommandOptions(module.command.arguments)
+                "options": createCommandOptions((module.command as ApplicationCommandChatInput).arguments)
             };
         case DiscordApplicationCommandType.User:
             return {
@@ -263,7 +263,8 @@ export const buildStandaloneCommand = (commandName: string, module: CommandModul
         case DiscordApplicationCommandType.PrimaryEntryPoint:
             return {
                 "type": DiscordApplicationCommandType.PrimaryEntryPoint,
-                "name": commandName
+                "name": commandName,
+                "handler": (module.command as ApplicationCommandPrimaryEntryPoint).handler
             };
     }
 };
@@ -276,7 +277,7 @@ export const buildSubcommandOption = (commandName: string, module: CommandModule
         "type": DiscordApplicationCommandOptionType.Subcommand,
         "name": commandName,
         "description": module.command.description,
-        "options": createCommandOptions(module.command.arguments)
+        "options": createCommandOptions((module.command as ApplicationCommandChatInput).arguments)
     };
 };
 

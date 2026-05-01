@@ -46,22 +46,22 @@ export type ApplicationCommandPrimaryEntryPoint = ApplicationCommandBase<"primar
     "handler": discord.EntryPointCommandHandlerType
 }>;
 
-export type ApplicationCommandChoice = {
+export type ApplicationCommandChoice<T = number | string> = {
     "name": string,
-    "value": string | number
+    "value": T
 };
 
-export type ApplicationCommandArgumentsBase<T = string, ADD = {}> = {
+export type ApplicationCommandArgumentsBase<T = string, ADD = {}, ChoicesType = string | number> = {
     "type": T,
     "name": string,
     "description": string,
     "required"?: boolean,
-    "choices"?: ApplicationCommandChoice[]
+    "choices"?: ApplicationCommandChoice<ChoicesType>[]
 } & Partial<ADD>;
 
 export type ApplicationCommandArguments =
-    ApplicationCommandArgumentsBase<"string", { "maxLength": number, "minLength": number }> |
-    ApplicationCommandArgumentsBase<"integer", { "maxValue": number, "minValue": number }> |
+    ApplicationCommandArgumentsBase<"string", { "maxLength": number, "minLength": number, "autoComplete": boolean }, string> |
+    ApplicationCommandArgumentsBase<"integer", { "maxValue": number, "minValue": number }, number> |
     ApplicationCommandArgumentsBase<"boolean"> |
     ApplicationCommandArgumentsBase<"user"> |
     ApplicationCommandArgumentsBase<"channel"> |
@@ -134,6 +134,11 @@ export type InteractionTypes = {
     "userContextMenu": discord.UserContextMenuCommandInteraction;
     "primaryEntryPoint": discord.PrimaryEntryPointCommandInteraction;
     "anySelectMenu": discord.AnySelectMenuInteraction;
+    "stringSelectMenu": discord.StringSelectMenuInteraction;
+    "userSelectMenu": discord.UserSelectMenuInteraction;
+    "roleSelectMenu": discord.RoleSelectMenuInteraction;
+    "mentionableSelectMenu": discord.MentionableSelectMenuInteraction;
+    "channelSelectMenu": discord.ChannelSelectMenuInteraction;
     "button": discord.ButtonInteraction;
     "autoComplete": discord.AutocompleteInteraction;
     "modalSubmit": discord.ModalSubmitInteraction;
@@ -146,7 +151,10 @@ export type InteractionCallbackArgs<T extends keyof InteractionTypes> = {
 };
 export type InteractionCallback<T extends keyof InteractionTypes> = (args: InteractionCallbackArgs<T>) => any;
 
-export type InteractionCondition<T extends keyof InteractionTypes> = {
+export type InteractionCondition<T extends keyof InteractionTypes> = T extends "autoComplete" ? {
+    "type": T,
+    "commandName": string
+} : {
     "type": T;
     "customId": string
 };

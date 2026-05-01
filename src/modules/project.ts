@@ -158,10 +158,14 @@ export default class Project {
 
                         if (!(
                             module.callback && typeof module.callback === "function" &&
-                            module.condition && typeof module.condition === "object" &&
-                            module.condition.type && typeof module.condition.type === "string" &&
-                            module.condition.customId && typeof module.condition.customId === "string"
-                        )) throw new Error("Invalid interaction module from: " + file);
+                            module.condition && typeof module.condition === "object"
+                        )) {
+                            if (module.condition.type === "autoComplete" && !(module.condition.commandName && typeof module.condition.commandName === "string"))
+                                throw new Error("Invalid interaction module from: " + file);
+
+                            if (module.condition.type !== "autoComplete" && !(module.condition.customId && typeof module.condition.customId === "string"))
+                                throw new Error("Invalid interaction module from: " + file);
+                        }
 
                         this.interactions.push(module)
                     }

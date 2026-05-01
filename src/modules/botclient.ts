@@ -1,6 +1,6 @@
-import { Client, ClientUser, REST, Routes } from "discord.js";
+import { Client, ClientUser, ComponentType, MessageComponentType, REST, Routes } from "discord.js";
 import Project from "./project";
-import { CommandModule, CustomEventsMap } from "../types";
+import { CommandModule, CustomEventsMap, InteractionModule } from "../types";
 import { EventEmitter } from 'node:stream';
 import * as fs from 'fs';
 import path from "node:path";
@@ -8,6 +8,8 @@ import chokidar from 'chokidar';
 import lodash from 'lodash';
 import { loadModule } from "./typescript";
 import ora from "ora";
+import wcmatch from 'wildcard-match';
+import chalk from "chalk";
 
 export default class BotClient {
     private _client!: Client<true>;
@@ -73,7 +75,76 @@ export default class BotClient {
 
                 return;
             }
+
+            if (interaction.isMessageComponent()) {
+                let type = "";
+
+                switch (interaction.componentType) {
+                    case ComponentType.Button: type = "button"; break;
+                    case ComponentType.StringSelect: type = "stringSelectMenu"; break;
+                    case ComponentType.UserSelect: type = "userSelectMenu"; break;
+                    case ComponentType.RoleSelect: type = "roleSelectMenu"; break;
+                    case ComponentType.MentionableSelect: type = "mentionableSelectMenu"; break;
+                    case ComponentType.ChannelSelect: type = "channelSelectMenu"; break;
+                }
+
+                const components = this._project.interactions.filter(v => v.condition.type === type);
+                const component = components.find(v => v.condition.type !== "autoComplete" && wcmatch(v.condition.customId)(interaction.customId));
+
+                if (!component) {
+                    console.error(chalk.red("  Cannot find message component with custom id " + interaction.customId));
+                    return;
+                }
+
+                await component.callback({
+                    interaction,
+                    client,
+                    "rest": this._rest
+                });
+
+                return;
+            }
+
+            if (interaction.isModalSubmit()) {
+                const components = this._project.interactions.filter(v => v.condition.type === "modalSubmit") as InteractionModule<"modalSubmit">[];
+                const component = components.find(v => wcmatch(v.condition.customId)(interaction.customId));
+
+                if (!component) {
+                    console.error(chalk.red("  Cannot find message component with custom id " + interaction.customId));
+                    return;
+                }
+
+                await component.callback({
+                    interaction,
+                    client,
+                    "rest": this._rest
+                });
+
+                return;
+            }
+
+            if (interaction.isAutocomplete()) {
+                const components = this._project.interactions.filter(v => v.condition.type === "autoComplete") as InteractionModule<"autoComplete">[];
+                const component = components.find(v => v.condition.commandName === interaction.commandName);
+
+                if (!component) {
+                    console.error(chalk.red("  Cannot find command named with " + interaction.commandName));
+                    return;
+                }
+
+                await component.callback({
+                    interaction,
+                    client,
+                    "rest": this._rest
+                });
+
+                return;
+            }
         });
+
+        for (const event of this._project.events) {
+            this._client.on(event.eventName, event.callback);
+        }
     }
 
     async load() {
@@ -86,16 +157,9 @@ export default class BotClient {
         process.on("beforeExit", (code) => this._customModuleHandler.emit("onExit", code));
 
         this._client = new Client(this._project.config.client);
-
         this.addEvents(this._client);
 
-        for (const event of this._project.events) {
-            this._client.on(event.eventName, event.callback);
-        }
-
         this._rest = new REST(this._project.config.rest).setToken(this._project.env.token);
-
-        console.log(this._project.getApplicationCommands());
         this._rest.put(Routes.applicationCommands(this._project.env.appId), {
             "body": this._project.getApplicationCommands()
         });

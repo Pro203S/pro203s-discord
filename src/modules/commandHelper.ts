@@ -170,12 +170,21 @@ export const createCommandOption = (argument: ApplicationCommandArguments): Basi
 
     switch (argument.type) {
         case "string":
+            if (argument.autoComplete) return {
+                ...base,
+                "type": DiscordApplicationCommandOptionType.String,
+                "min_length": argument.minLength,
+                "max_length": argument.maxLength,
+                "autocomplete": true,
+            };
+
             return {
                 ...base,
                 "type": DiscordApplicationCommandOptionType.String,
-                "choices": createStringChoices(argument),
                 "min_length": argument.minLength,
-                "max_length": argument.maxLength
+                "max_length": argument.maxLength,
+                "autocomplete": false,
+                "choices": argument.choices
             };
         case "integer":
             return {
@@ -248,7 +257,7 @@ export const buildStandaloneCommand = (commandName: string, module: CommandModul
                 "type": DiscordApplicationCommandType.ChatInput,
                 "name": commandName,
                 "description": module.command.description,
-                "options": createCommandOptions((module.command as ApplicationCommandChatInput).arguments)
+                "options": createCommandOptions((module.command as ApplicationCommandChatInput).arguments),
             };
         case DiscordApplicationCommandType.User:
             return {

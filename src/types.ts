@@ -12,6 +12,10 @@ export type Environments = {
 };
 
 //#region Command
+export type CommandTree = {
+    [key: string]: CommandModule | CommandTree
+};
+
 export type ApplicationCommandType = "chatInput" | "user" | "message" | "primary_entry_point";
 export type Command = {
     "type"?: ApplicationCommandType,

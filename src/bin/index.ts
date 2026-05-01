@@ -21,26 +21,35 @@ const helpMessage = () => {
     printVersion();
 };
 
-(async () => {
-    try {
-        const command = process.argv[2];
+process.on("uncaughtException", (err) => {
+    const e = err as Error;
+    console.error(c.red("Error: " + e.message));
+    console.error(c.gray(e.stack));
+    console.error(c.gray(`\n@pro203s/discord v${packageJson.version}`));
 
-        switch (command) {
-            case "start":
-                await Start();
-                break;
-            case "clear-commands":
-                await ClearCommands();
-                break;
-            default:
-                helpMessage();
-                break;
+    process.exit(1);
+});
+
+    (async () => {
+        try {
+            const command = process.argv[2];
+
+            switch (command) {
+                case "start":
+                    await Start();
+                    break;
+                case "clear-commands":
+                    await ClearCommands();
+                    break;
+                default:
+                    helpMessage();
+                    break;
+            }
+        } catch (err) {
+            const e = err as Error;
+            console.error(c.red("ERROR: " + e.message));
+            console.error(c.gray(e.stack));
+
+            printVersion();
         }
-    } catch (err) {
-        const e = err as Error;
-        console.error(c.red("ERROR: " + e.message));
-        console.error(c.gray(e.stack));
-
-        printVersion();
-    }
-})();
+    })();

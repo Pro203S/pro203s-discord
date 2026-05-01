@@ -1,6 +1,6 @@
 import { Client, ClientUser, REST, Routes } from "discord.js";
 import Project from "./project";
-import { CustomEventsMap } from "../types";
+import { CommandModule, CommandTree, CustomEventsMap } from "../types";
 import { EventEmitter } from 'node:stream';
 import * as fs from 'fs';
 import path from "node:path";
@@ -26,6 +26,19 @@ export default class BotClient {
             throw new Error("Please load the BotClient first!");
     }
 
+    private addEvents(client: Client) {
+        const isCommandModule = (value: any): value is CommandModule => typeof value === "object" && value !== null && "command" in value && "callback" in value;
+
+        client.on("interactionCreate", (interaction) => {
+            if (interaction.isChatInputCommand()) {
+                const name = interaction.commandName;
+                const subcommand = interaction.options.getSubcommand();
+                const group = interaction.options.getSubcommandGroup();
+                console.log(name, subcommand, group)
+            }
+        });
+    }
+
     async load() {
         await this._project.load();
 
@@ -38,13 +51,22 @@ export default class BotClient {
         this._client = new Client(this._project.config.client);
         this._rest = new REST(this._project.config.rest).setToken(this._project.env.token);
 
+        this.addEvents(this._client);
+
         this._rest.put(Routes.applicationCommands(this._project.env.appId), {
             "body": this._project.getApplicationCommands()
         });
     }
 
     async start() {
+        this._customModuleHandler.emit("onStartup");
+
         this.checkLoaded();
+
+        this._client.on("debug", (data) => this._customModuleHandler.emit("onDjsDebug", data));
+        this._client.on("warn", (data) => this._customModuleHandler.emit("onDjsWarn", data));
+        this._client.on("error", (err) => this._customModuleHandler.emit("onDjsError", err));
+
         this._client.login(this._project.env.token);
 
         await new Promise<void>((resolve) => {
@@ -55,6 +77,8 @@ export default class BotClient {
                 resolve();
             });
         });
+
+        this._customModuleHandler.emit("onStartupFinished");
     }
 
     async watch() {

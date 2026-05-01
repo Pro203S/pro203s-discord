@@ -19,8 +19,6 @@ async function Request(options: {
         });
 
         spinner.succeed("Cleared!");
-    } catch (err) {
-        throw err;
     } finally {
         spinner.stop();
         spinner.clear();

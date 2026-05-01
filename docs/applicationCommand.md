@@ -138,6 +138,7 @@ export const callback = async ({ interaction }: CommandCallbackArgs<"messageCont
 import type { Command, CommandCallbackArgs } from "@pro203s/discord";
 
 export const command: Command = {
+    "description": "앱 주 진입점",
     "type": "primaryEntryPoint",
     "handler": 1 // AppHandler
 };

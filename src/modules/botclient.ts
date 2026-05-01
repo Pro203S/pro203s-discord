@@ -1,11 +1,12 @@
 import { Client, ClientUser, REST, Routes } from "discord.js";
 import Project from "./project";
-import { CommandModule, CommandTree, CustomEventsMap } from "../types";
+import { CommandModule, CustomEventsMap } from "../types";
 import { EventEmitter } from 'node:stream';
 import * as fs from 'fs';
 import path from "node:path";
 import chokidar from 'chokidar';
 import lodash from 'lodash';
+import { loadModule } from "./typescript";
 
 export default class BotClient {
     private _client!: Client<true>;
@@ -26,15 +27,31 @@ export default class BotClient {
             throw new Error("Please load the BotClient first!");
     }
 
-    private addEvents(client: Client) {
-        const isCommandModule = (value: any): value is CommandModule => typeof value === "object" && value !== null && "command" in value && "callback" in value;
-
-        client.on("interactionCreate", (interaction) => {
+    private addEvents(client: Client<true>) {
+        client.on("interactionCreate", async (interaction) => {
             if (interaction.isChatInputCommand()) {
                 const name = interaction.commandName;
-                const subcommand = interaction.options.getSubcommand();
-                const group = interaction.options.getSubcommandGroup();
-                console.log(name, subcommand, group)
+                const subcommand = interaction.options.getSubcommand(false);
+                const group = interaction.options.getSubcommandGroup(false);
+                let modulePath = path.join(this._project.dir, "src", "commands");
+
+                if (group && subcommand) {
+                    modulePath = path.join(modulePath, name, group, subcommand);
+                } else if (subcommand) {
+                    modulePath = path.join(modulePath, name, subcommand);
+                } else {
+                    modulePath = path.join(modulePath, name);
+                }
+
+                modulePath += ".ts";
+
+                const module: CommandModule = await loadModule(modulePath);
+
+                await module.callback({
+                    interaction,
+                    client,
+                    "rest": this._rest
+                })
             }
         });
     }
@@ -49,9 +66,14 @@ export default class BotClient {
         process.on("beforeExit", (code) => this._customModuleHandler.emit("onExit", code));
 
         this._client = new Client(this._project.config.client);
-        this._rest = new REST(this._project.config.rest).setToken(this._project.env.token);
 
         this.addEvents(this._client);
+
+        for (const event of this._project.events) {
+            this._client.on(event.eventName, event.callback);
+        }
+
+        this._rest = new REST(this._project.config.rest).setToken(this._project.env.token);
 
         this._rest.put(Routes.applicationCommands(this._project.env.appId), {
             "body": this._project.getApplicationCommands()

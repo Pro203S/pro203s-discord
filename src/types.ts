@@ -52,12 +52,12 @@ export type ApplicationCommandArguments =
 
 export type CommandCallbackArgs<T extends ApplicationCommandType> = {
     "interaction": T extends "chatInput" ?
-    discord.ChatInputCommandInteraction<"raw"> :
+    discord.ChatInputCommandInteraction<discord.CacheType> :
     T extends "user" ?
-    discord.UserContextMenuCommandInteraction<"raw"> :
+    discord.UserContextMenuCommandInteraction<discord.CacheType> :
     T extends "message" ?
-    discord.MessageContextMenuCommandInteraction<"raw"> :
-    discord.PrimaryEntryPointCommandInteraction<"raw">;
+    discord.MessageContextMenuCommandInteraction<discord.CacheType> :
+    discord.PrimaryEntryPointCommandInteraction<discord.CacheType>;
     "client": discord.Client<true>
     "rest": discord.REST
 };

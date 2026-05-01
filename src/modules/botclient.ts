@@ -121,9 +121,11 @@ export default class BotClient {
         });
 
         this._customModuleHandler.emit("onStartupFinished");
+
+        this.watch();
     }
 
-    async watch() {
+    private async watch() {
         this.checkLoaded();
 
         const commandsPath = path.join(this._project.dir, "src", "commands");

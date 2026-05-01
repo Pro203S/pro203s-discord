@@ -19,8 +19,6 @@ export default async function Start() {
 
         logCheck("Ready in " + (new Date().getTime() - start) + "ms");
         console.log("  Logged In as " + client.user.username + "#" + client.user.discriminator);
-
-        await client.watch();
     } finally {
         spinner.stop().clear();
     }

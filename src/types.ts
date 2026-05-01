@@ -19,26 +19,32 @@ export type CommandTree = {
 export type ApplicationCommandType = "chatInput" | "userContextMenu" | "messageContextMenu" | "primaryEntryPoint";
 
 export type Command =
-    ApplicationCommandBase<"chatInput", {
-        "description": string,
-        "arguments"?: ApplicationCommandArguments[]
-    }> |
-    ApplicationCommandBase<"userContextMenu", {
-        "description": string,
-        "arguments"?: ApplicationCommandArguments[]
-    }> |
-    ApplicationCommandBase<"messageContextMenu", {
-        "description": string,
-        "arguments"?: ApplicationCommandArguments[]
-    }> |
-    ApplicationCommandBase<"primaryEntryPoint", {
-        "description": string,
-        "arguments"?: ApplicationCommandArguments[]
-    }>;
+    ApplicationCommandChatInput |
+    ApplicationCommandUserContextMenu |
+    ApplicationCommandMessageContextMenu |
+    ApplicationCommandPrimaryEntryPoint;
 
 export type ApplicationCommandBase<T extends ApplicationCommandType, ADD = {}> = {
     "type": T
 } & ADD;
+
+export type ApplicationCommandChatInput = ApplicationCommandBase<"chatInput", {
+    "description": string,
+    "arguments"?: ApplicationCommandArguments[]
+}>;
+
+export type ApplicationCommandUserContextMenu = ApplicationCommandBase<"userContextMenu", {
+    "description": string
+}>;
+
+export type ApplicationCommandMessageContextMenu = ApplicationCommandBase<"messageContextMenu", {
+    "description": string
+}>;
+
+export type ApplicationCommandPrimaryEntryPoint = ApplicationCommandBase<"primaryEntryPoint", {
+    "description": string,
+    "handler": discord.EntryPointCommandHandlerType
+}>;
 
 export type ApplicationCommandChoice = {
     "name": string,

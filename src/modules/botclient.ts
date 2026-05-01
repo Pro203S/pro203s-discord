@@ -29,19 +29,36 @@ export default class BotClient {
 
     private addEvents(client: Client<true>) {
         client.on("interactionCreate", async (interaction) => {
-            if (interaction.isChatInputCommand()) {
-                const name = interaction.commandName;
-                const subcommand = interaction.options.getSubcommand(false);
-                const group = interaction.options.getSubcommandGroup(false);
-                let modulePath = path.join(this._project.dir, "src", "commands");
+            if (interaction.isCommand()) {
+                if (interaction.isChatInputCommand()) {
+                    const name = interaction.commandName;
+                    const subcommand = interaction.options.getSubcommand(false);
+                    const group = interaction.options.getSubcommandGroup(false);
+                    let modulePath = path.join(this._project.dir, "src", "commands");
 
-                if (group && subcommand) {
-                    modulePath = path.join(modulePath, name, group, subcommand);
-                } else if (subcommand) {
-                    modulePath = path.join(modulePath, name, subcommand);
-                } else {
-                    modulePath = path.join(modulePath, name);
+                    if (group && subcommand) {
+                        modulePath = path.join(modulePath, name, group, subcommand);
+                    } else if (subcommand) {
+                        modulePath = path.join(modulePath, name, subcommand);
+                    } else {
+                        modulePath = path.join(modulePath, name);
+                    }
+
+                    modulePath += ".ts";
+
+                    const module: CommandModule = await loadModule(modulePath);
+
+                    await module.callback({
+                        interaction,
+                        client,
+                        "rest": this._rest
+                    });
+
+                    return;
                 }
+
+                const name = interaction.commandName;
+                let modulePath = path.join(this._project.dir, "src", "commands", name);
 
                 modulePath += ".ts";
 
@@ -51,7 +68,9 @@ export default class BotClient {
                     interaction,
                     client,
                     "rest": this._rest
-                })
+                });
+
+                return;
             }
         });
     }
@@ -75,6 +94,7 @@ export default class BotClient {
 
         this._rest = new REST(this._project.config.rest).setToken(this._project.env.token);
 
+        console.log(this._project.getApplicationCommands());
         this._rest.put(Routes.applicationCommands(this._project.env.appId), {
             "body": this._project.getApplicationCommands()
         });

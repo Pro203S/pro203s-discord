@@ -16,12 +16,29 @@ export type CommandTree = {
     [key: string]: CommandModule | CommandTree
 };
 
-export type ApplicationCommandType = "chatInput" | "user" | "message" | "primary_entry_point";
-export type Command = {
-    "type"?: ApplicationCommandType,
-    "description": string,
-    "arguments"?: ApplicationCommandArguments[]
-};
+export type ApplicationCommandType = "chatInput" | "userContextMenu" | "messageContextMenu" | "primaryEntryPoint";
+
+export type Command =
+    ApplicationCommandBase<"chatInput", {
+        "description": string,
+        "arguments"?: ApplicationCommandArguments[]
+    }> |
+    ApplicationCommandBase<"userContextMenu", {
+        "description": string,
+        "arguments"?: ApplicationCommandArguments[]
+    }> |
+    ApplicationCommandBase<"messageContextMenu", {
+        "description": string,
+        "arguments"?: ApplicationCommandArguments[]
+    }> |
+    ApplicationCommandBase<"primaryEntryPoint", {
+        "description": string,
+        "arguments"?: ApplicationCommandArguments[]
+    }>;
+
+export type ApplicationCommandBase<T extends ApplicationCommandType, ADD = {}> = {
+    "type": T
+} & ADD;
 
 export type ApplicationCommandChoice = {
     "name": string,
@@ -53,9 +70,9 @@ export type ApplicationCommandArguments =
 export type CommandCallbackArgs<T extends ApplicationCommandType> = {
     "interaction": T extends "chatInput" ?
     discord.ChatInputCommandInteraction<discord.CacheType> :
-    T extends "user" ?
+    T extends "userContextMenu" ?
     discord.UserContextMenuCommandInteraction<discord.CacheType> :
-    T extends "message" ?
+    T extends "messageContextMenu" ?
     discord.MessageContextMenuCommandInteraction<discord.CacheType> :
     discord.PrimaryEntryPointCommandInteraction<discord.CacheType>;
     "client": discord.Client<true>

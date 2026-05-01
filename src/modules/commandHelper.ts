@@ -117,11 +117,11 @@ export const getDiscordCommandType = (type?: CommandModule["command"]["type"]) =
     switch (type ?? "chatInput") {
         case "chatInput":
             return DiscordApplicationCommandType.ChatInput;
-        case "user":
+        case "userContextMenu":
             return DiscordApplicationCommandType.User;
-        case "message":
+        case "messageContextMenu":
             return DiscordApplicationCommandType.Message;
-        case "primary_entry_point":
+        case "primaryEntryPoint":
             return DiscordApplicationCommandType.PrimaryEntryPoint;
     }
 };

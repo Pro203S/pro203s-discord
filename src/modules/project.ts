@@ -24,9 +24,16 @@ export default class Project {
     public events: EventModule[] = [];
     public interactions: InteractionModule[] = [];
 
+    /**
+     * @param dir Must be an absolute path.
+     */
     constructor(
         public dir: string
-    ) { }
+    ) {
+        if (!path.isAbsolute(dir)) {
+            throw new Error("The project directory must be an absolute path.");
+        }
+    }
 
     getApplicationCommands(): RESTPostAPIApplicationCommandsJSONBody[] {
         return Object.entries(this.commands)

@@ -7,6 +7,7 @@ import path from "node:path";
 import chokidar from 'chokidar';
 import lodash from 'lodash';
 import { loadModule } from "./typescript";
+import ora from "ora";
 
 export default class BotClient {
     private _client!: Client<true>;
@@ -150,11 +151,12 @@ export default class BotClient {
                 if (lodash.isEqual(infos, now))
                     return;
 
-                console.log("  Reloading application commands...");
+                const spinner = ora("Reloading application commands...").start();
                 infos = now;
                 this._rest.put(Routes.applicationCommands(this._project.env.appId), {
                     "body": this._project.getApplicationCommands()
                 });
+                spinner.succeed("Successfully reloaded application commands!");
             });
         }
     }

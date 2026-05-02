@@ -2,3 +2,5 @@ src/
 bun.lock
 
 test/
+docs/
+README.md

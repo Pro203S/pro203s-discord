@@ -28,6 +28,8 @@ async function Request(options: {
 export default async function ClearCommands() {
     const project = new Project(process.cwd());
 
+    await project.load();
+
     await Request({
         "token": project.env.token,
         "appId": project.env.appId,

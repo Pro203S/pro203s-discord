@@ -1,7 +1,7 @@
 {
   "name": "@pro203s/discord",
   "description": "Make Discord bot easily.",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/types.d.ts",
   "exports": {

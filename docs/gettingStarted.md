@@ -23,7 +23,7 @@ npm install @pro203s/discord
 
 ```json
 "scripts": {
-    "start": "@pro203s/discord start",
+    "start": "discord start",
 }
 ```
 

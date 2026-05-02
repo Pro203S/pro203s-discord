@@ -1,4 +1,4 @@
-# 이벤트
+# 이벤트 핸들링
 
 이 문서는 [@pro203s/discord](https://npmjs.com/package/@pro203s/discord)를 사용할 때를 가정한 문서입니다.  
 
@@ -39,6 +39,18 @@ export const eventName: Events = "clientReady";
 // EventCallback<"clientReady">는 함수의 파라메터로 discord.js의 Client<true>를 제공합니다.
 export const callback: EventCallback<typeof eventName> = async (client) => {
     // 봇의 이름과 태그를 가져와 출력합니다.
+    console.log("Bot info: " + client.user.displayName + "#" + client.user.discriminator);
+};
+```
+
+## 3. 예제 코드
+
+```typescript
+import type { Events, EventCallback } from "@pro203s/discord";
+
+export const eventName: Events = "clientReady";
+
+export const callback: EventCallback<typeof eventName> = async (client) => {
     console.log("Bot info: " + client.user.displayName + "#" + client.user.discriminator);
 };
 ```

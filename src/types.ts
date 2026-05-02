@@ -130,9 +130,6 @@ export type EventModule<K extends Events = Events> = {
 //#region src/interactions
 
 export type InteractionTypes = {
-    "messageContextMenu": discord.MessageContextMenuCommandInteraction;
-    "userContextMenu": discord.UserContextMenuCommandInteraction;
-    "primaryEntryPoint": discord.PrimaryEntryPointCommandInteraction;
     "anySelectMenu": discord.AnySelectMenuInteraction;
     "stringSelectMenu": discord.StringSelectMenuInteraction;
     "userSelectMenu": discord.UserSelectMenuInteraction;

@@ -8,6 +8,7 @@ discord.js 기반 봇을 간편하게 만들 수 있는 모듈
 2. [애플리케이션 커맨드 만들기](/docs/applicationCommand.md)
 3. [상호작용 핸들링](/docs/interaction.md)
 4. [이벤트 핸들링](/docs/events.md)
+5. [CLI 사용하기](/docs/cli.md)
 
 [템플릿 레포지토리](https://github.com/Pro203S/pro203s-discord-template)
 
